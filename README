@@ -1,0 +1,177 @@
+NUME: Vasilache Raluca
+GRUPA: 324CA
+
+			     #Tema2-AA: Gigel si mafiotii
+
+	Proiectul contine:
+	- un folder src cu impementarea solutiilor in java
+	- un fisier README
+
+	Descrierea solutiilor:
+
+   ### Task1 : Plantarea spionilor
+
+   Problema este identica cu problema k-colorari (dandu-se un graf neorientat,
+sa se determina daca poate fi colorat in k culori, astfel incat oricare doua
+noduri adiacente sa aiba culori diferite). Deci va trebui sa reducam problema
+k-colorari la problema SAT.
+   
+   * Alegerea si codificarea variabilelor:
+   
+   - consideram x_ij (cu 1 <= i <= noduri(n) si 1 <= j <= culori(k)) cu
+semnificatia ca nodul i are culoarea j.
+   Obtinem o lista cu propozitii de tipul:
+   
+   1.   x_11: nodul 1 are culoarea 1
+   2.   x_12: nodul 1 are culoarea 2
+   3.   x_13: nodul 1 are culoarea 3
+   ...............................
+   k.   x_1k: nodul 1 are culoarea k
+   k+1. x_21: nodul 2 are culoarea 1
+   .................................
+   n*k. x_nk: nodul n are culoarea k
+
+   Obtinem astfel n*k variabile, pe care, pentru a putea lucra cu ele,
+le vom numerota, ca mai sus, cu numere de la 1 la n*k.
+
+
+  * Construirea clauzelor: 
+
+  1. Fiecare nod trebuie sa aiba cel putin o culoare (n clauze): tinand
+cont de semnificatia variabilelor descrisa mai sus, aceasta conditie
+genereaza clauze de forma:
+    
+    1         V  2         V 3 V.....V k
+    k+1       V  k+2       V.........V 2k
+    .....................................
+    (n-1)*k+1 V  (n-1)*k+2 V.........V nk
+    
+    Aceste clauze le-am generat in cod folosind o variabila auxiliara
+care este incrementata si printata la fiecare pas.
+    Complexitatea pentru generarea acestor clauze este n*k.
+
+  2. Fiecare nod poate avea cel mult o culoare (n(k(k-1))/2 clauze):
+    
+    -1 V -2
+    -1 V -3
+    -2 V -3
+    -4 V -5
+    -4 V -6
+    -5 V -6 etc.
+
+     Complexitatea solutiei propuse este :
+	n((k-2) + (k-3) + ... + (k - k)) = 
+	n((k*k - k(k+1))/2) = 
+	n((k*k - k)/2) = 
+	nk^2
+
+  3. Doua noduri adiacente nu pot avea aceeasi culoarea (m*k clauze): 
+
+    -1 V -10 
+    -2 V -11 
+    -3 V -12 
+    -1 V -13 
+    -2 V -14 etc.
+
+     Complexitatea solutiei propuse este : n^2*k*m
+
+     * Obtinem, deci, un total de n + n(k(k-1))/2 + mk clauze prin
+metode cu o complexitate finala de : O(nk + nk^2 + n^2km)
+
+
+   ### Task2 : Investigatiile familiilor extinse
+
+   Problema este identica cu problema gasirii unei clici de dimensiune k, intr-un
+graf neorientat. Pentru reducerea acestei probleme la SAT, urmam pasi asemanatori
+cu cei descrisi mai sus.
+
+   * Alegerea si codificarea variabilelor:
+   
+   - consideram x_ij (cu 1 <= i <= k si 1 <= j <= n) cu
+semnificatia ca nodul j se afla pe pozitia i in clica.
+   Obtinem o lista cu propozitii de tipul:
+   
+   1.   x_11: nodul 1 e pe pozitia 1
+   2.   x_21: nodul 1 e pe pozitia 2
+   3.   x_31: nodul 1 e pe pozitia 3
+   ...............................
+   k.   x_k1: nodul 1 e pe pozitia k
+   k+1. x_12: nodul 2 e pe pozitia 1
+   .................................
+   n*k. x_kn: nodul n e pe pozitia k
+
+   Obtinem astfel n*k variabile, pe care, pentru a putea lucra cu ele,
+le vom numerota, ca mai sus, cu numere de la 1 la n*k.
+
+   * Construirea clauzelor: 
+
+   1. Fiecare pozitie din clica trebuie sa fie ocupata : conditie asemanatoare
+cu cea de la task1 => complexitatea nk
+   2. Un nod nu poate fi pe doua pozitii diferite : conditie asemanatoare cu cea
+de la task1 => complexitate nk^2
+   3. Doua noduri care nu sunt adiacente nu pot face ambele parte din clica: 
+      n*n*((n*n - n)/2 * (k*k - k(k+1))/2) = O(n^4k^2)
+   Pe masura ce sunt construite, clauzele sunt memorate, astfel incat sa se
+poate obtine in final numarul acestora, care trebuie scris pe prima linie.
+Pentru memorarea clauzelor se foloseste StringBuilder (NU String!) pentru eficienta
+(timpul de rulare a fost redus de la 3min la 20s).
+   Complexitatea finala: O(nk + nk^2 +  n*n*((n*n - n)/2 * (k*k - k(k+1))/2))
+
+
+   ### Task3 : Arestarile mafiotilor
+
+   Pentru a afla numarul minim de noduri care trebuie scoase din graf astfel incat
+toate nodurile ramase sa fie izolate (problema care se reduce la minimum vertex cover)
+trebuie sa se realizeze interogari multiple folosind task2, pana cand este gasita o
+o clica de dimensiune maxima (trimitem k ca fiind n, apoi n-1, etc pana gasim 
+clica maxima). Algoritmul de la task2 trebuie, insa, aplicat pe graful complementar.
+Raspunsul la aceasta problema va fi reprezentat de nodurile care NU fac parte din
+clica maxima a grafului complementar.
+
+   ### Bonus
+
+   Maximum Clique se poate rezolva prin reducerea la SAT a problemei Minimum Vertex Cover
+pentru graful complementar. Clauzele alese vor fi urmatoarele:
+  1. Clauze soft: pentru orice nod i din graf, x_i (nodul se afla in clica maxima);
+complexitate O(n)
+  2. Clauze hard: Pentru oricare doua noduri u si v adiacente (in graful complementar):
+-x_u V -x_v; complexitate O(n^2)
+  Observam ca avem nevoie de un numar de variabile egal cu numarul de noduri
+  Am ales costul pentru clauzele soft ca fiind 1 (nu are sens ierarhizarea in acest caz) =>
+costul clauzelor hard = n + 1
+  Raspunsul va fi reprezentat de variabilele carora oracolul le-a atribuit valoarea "false".
+
+
+Referinte:
+	Task1:
+	1. https://www.cs.cmu.edu/~emc/15-820A/assignments/solution1.pdf
+	
+	Bonus:
+	1. https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.154.2551&rep=rep1&type=pdf
+	2. https://www.ijcai.org/Proceedings/2017/0091.pdf
+	3. https://hal.inrae.fr/hal-02659328/document
+
+
+	
+	
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
